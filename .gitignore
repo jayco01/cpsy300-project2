@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Azure Functions local settings
+local.settings.json
+.vscode/
+
+# OS / Editor artifacts
+.DS_Store
+*.swp
