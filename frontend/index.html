@@ -3,81 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nutritional Insights</title>
-    <!-- Tailwind CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
+    <title>Nutritional Insights - Cloud Dashboard</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Application Entry Point (ES Module) -->
+    <script type="module" src="js/app.js"></script>
 </head>
-<body class="bg-gray-100">
+<body>
 
-    <header class="bg-blue-600 p-4 text-white">
-        <h1 class="text-3xl font-semibold">Nutritional Insights</h1>
+    <!-- Header -->
+    <header class="app-header">
+        <h1>Nutritional Insights</h1>
+        <span class="badge">Azure Functions (Flex Consumption)</span>
     </header>
 
-    <main class="container mx-auto p-6">
-        <section class="mb-8">
-            <h2 class="text-2xl font-semibold mb-4">Explore Nutritional Insights</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-white p-4 shadow-lg rounded-lg">
-                    <h3 class="font-semibold">Bar Chart</h3>
-                    <p class="text-sm text-gray-600">Average macronutrient content by diet type.</p>
-                    <canvas id="barChart" class="w-full h-48"></canvas>
-                </div>
+    <!-- Execution Metadata Banner -->
+    <aside class="metadata-banner">
+        <div class="meta-item">
+            <strong>Status:</strong>
+            <span id="apiStatus" class="status-pill pending">Initializing...</span>
+        </div>
+        <div class="meta-item">
+            <strong>Execution Time:</strong>
+            <span id="executionTime" style="color: var(--color-primary); font-weight:700;">-- ms</span>
+        </div>
+        <div class="meta-item">
+            <strong>Records:</strong>
+            <span id="totalRecords">--</span>
+        </div>
+        <div class="meta-item">
+            <strong>Timestamp:</strong>
+            <span id="timestamp">--</span>
+        </div>
+    </aside>
 
-                <div class="bg-white p-4 shadow-lg rounded-lg">
-                    <h3 class="font-semibold">Scatter Plot</h3>
-                    <p class="text-sm text-gray-600">Nutrient relationships (e.g., protein vs carbs).</p>
-                    <canvas id="scatterPlot" class="w-full h-48"></canvas>
-                </div>
+    <!-- Main Container -->
+    <main class="container">
 
-                <div class="bg-white p-4 shadow-lg rounded-lg">
-                    <h3 class="font-semibold">Heatmap</h3>
-                    <p class="text-sm text-gray-600">Nutrient correlations.</p>
-                    <div id="heatmap" class="w-full h-48"></div>
+        <!-- Controls Section -->
+        <section class="card controls-card">
+            <div class="controls-form">
+                <div class="form-group">
+                    <label for="dietFilter">Diet Type Filter</label>
+                    <select id="dietFilter" class="select-control">
+                        <option value="all">All Diet Types</option>
+                    </select>
                 </div>
-
-                <div class="bg-white p-4 shadow-lg rounded-lg">
-                    <h3 class="font-semibold">Pie Chart</h3>
-                    <p class="text-sm text-gray-600">Recipe distribution by diet type.</p>
-                    <canvas id="pieChart" class="w-full h-48"></canvas>
+                <div>
+                    <button id="btnFetch" class="btn btn-primary">Get Insights</button>
+                    <button id="btnReset" class="btn btn-secondary">Reset</button>
                 </div>
             </div>
         </section>
 
-        <section class="mb-8">
-            <h2 class="text-2xl font-semibold mb-4">Filters and Data Interaction</h2>
-            <div class="flex flex-wrap gap-4">
-                <input type="text" placeholder="Search by Diet Type" class="p-2 border rounded w-full sm:w-auto">
-                <select class="p-2 border rounded w-full sm:w-auto">
-                    <option value="all">All Diet Types</option>
-                    <option value="vegan">Vegan</option>
-                    <option value="keto">Keto</option>
-                    <!-- Add more options -->
-                </select>
+        <!-- Visual Insights (4 Distinct Visualizations) -->
+        <section class="charts-grid">
+            <!-- 1. Bar Chart -->
+            <div class="card">
+                <div>
+                    <h2 class="card-title">Macronutrient Averages</h2>
+                    <p class="card-subtitle">Average Protein, Carbs, and Fat (g) per diet</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 2. Scatter Plot -->
+            <div class="card">
+                <div>
+                    <h2 class="card-title">Protein vs. Carbs</h2>
+                    <p class="card-subtitle">Macronutrient relationship across recipes</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="scatterPlot"></canvas>
+                </div>
+            </div>
+
+            <!-- 3. Heatmap Matrix -->
+            <div class="card">
+                <div>
+                    <h2 class="card-title">Correlation Heatmap</h2>
+                    <p class="card-subtitle">Macronutrient correlation matrix</p>
+                </div>
+                <div class="chart-wrapper" style="display:flex; align-items:center;">
+                    <div id="heatmap" style="width:100%;"></div>
+                </div>
+            </div>
+
+            <!-- 4. Pie Chart -->
+            <div class="card">
+                <div>
+                    <h2 class="card-title">Diet Distribution</h2>
+                    <p class="card-subtitle">Total recipe share by diet type</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="pieChart"></canvas>
+                </div>
             </div>
         </section>
 
-        <section class="mb-8">
-            <h2 class="text-2xl font-semibold mb-4">API Data Interaction</h2>
-            <div class="flex flex-wrap gap-4">
-                <button class="bg-blue-600 text-white py-2 px-4 rounded">Get Nutritional Insights</button>
-                <button class="bg-green-600 text-white py-2 px-4 rounded">Get Recipes</button>
-                <button class="bg-purple-600 text-white py-2 px-4 rounded">Get Clusters</button>
+        <!-- Data Table -->
+        <section class="card">
+            <div>
+                <h2 class="card-title">Top Protein Recipes</h2>
+                <p class="card-subtitle">Highest protein recipes for selected diet filter</p>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+            <thead>
+                        <tr>
+                <th>Recipe Name</th>
+                <th>Diet Type</th>
+                <th style="text-align:right;">Protein (g)</th>
+                <th style="text-align:right;">Carbs (g)</th>
+                <th style="text-align:right;">Fat (g)</th>
+                        </tr>
+            </thead>
+            <tbody id="topRecipesBody">
+                        <tr><td colspan="5" style="text-align:center; color:#94a3b8;">Loading recipes...</td></tr>
+            </tbody>
+                </table>
             </div>
         </section>
 
-        <section>
-            <h2 class="text-2xl font-semibold mb-4">Pagination</h2>
-            <div class="flex justify-center gap-2 mt-4">
-                <button class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">Previous</button>
-                <button class="px-3 py-1 bg-blue-600 text-white rounded">1</button>
-                <button class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">2</button>
-                <button class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">Next</button>
-            </div>
-        </section>
     </main>
 
-    <footer class="bg-blue-600 p-4 text-white text-center mt-10">
-        <p>&copy; 2025 Nutritional Insights. All Rights Reserved.</p>
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>&bull; CPSY 300 Project 2 &bull; Cloud Dashboard on Azure &bull;</p>
     </footer>
 
 </body>
